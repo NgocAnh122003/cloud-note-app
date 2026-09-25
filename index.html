@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CloudNote - Serverless App</title>
+    <!-- Tích hợp Google Font -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Tích hợp thư viện popup SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+      :root {
+        --primary-color: #0066ff;
+        --primary-hover: #0052cc;
+        --bg-color: #f0f4f8;
+        --card-bg: #ffffff;
+        --text-main: #1e293b;
+        --text-muted: #64748b;
+        --border-color: #e2e8f0;
+      }
+
+      body {
+        font-family: "Plus Jakarta Sans", sans-serif;
+        background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+        min-height: 100vh;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding-top: 6vh;
+        padding-bottom: 50px;
+        color: var(--text-main);
+      }
+
+      .container {
+        background: var(--card-bg);
+        padding: 40px;
+        border-radius: 24px;
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 500px;
+        box-sizing: border-box;
+      }
+
+      /* Header chứa Tiêu đề và Tên User */
+      .app-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+      }
+
+      h2 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 22px;
+        color: var(--text-main);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .user-controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      #user-greeting {
+        background: #fffbeb;
+        color: #d97706;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        border: 1px solid #fef3c7;
+      }
+
+      /* Nút Đăng xuất */
+      .btn-logout {
+        background: #fee2e2;
+        color: #ef4444;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .btn-logout:hover {
+        background: #fecaca;
+        color: #dc2626;
+      }
+
+      .input-wrapper {
+        position: relative;
+        margin-bottom: 20px;
+      }
+
+      textarea {
+        width: 100%;
+        height: 120px;
+        padding: 16px;
+        box-sizing: border-box;
+        border: 2px solid var(--border-color);
+        border-radius: 16px;
+        resize: none;
+        font-family: inherit;
+        font-size: 15px;
+        transition: all 0.3s ease;
+        background: #f8fafc;
+        color: var(--text-main);
+        line-height: 1.5;
+      }
+
+      textarea:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        background: #ffffff;
+        box-shadow: 0 0 0 4px rgba(0, 102, 255, 0.1);
+      }
+
+      textarea::placeholder {
+        color: #94a3b8;
+      }
+
+      .btn-save {
+        background: linear-gradient(135deg, #0066ff 0%, #00a3ff 100%);
+        color: white;
+        border: none;
+        padding: 16px;
+        cursor: pointer;
+        border-radius: 14px;
+        width: 100%;
+        font-size: 16px;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 20px rgba(0, 102, 255, 0.25);
+      }
+
+      .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 25px rgba(0, 102, 255, 0.35);
+      }
+
+      .btn-save:active {
+        transform: translateY(0);
+      }
+
+      .header-list {
+        font-size: 14px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 40px;
+        margin-bottom: 15px;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .header-list::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--border-color);
+      }
+
+      #notesList {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .note-card {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        padding: 20px;
+        border-radius: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 15px;
+        transition: all 0.2s ease;
+      }
+
+      .note-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.08);
+        border-color: #cbd5e1;
+      }
+
+      .note-text {
+        font-size: 15px;
+        color: var(--text-main);
+        line-height: 1.6;
+        word-break: break-word;
+        flex-grow: 1;
+        margin: 0;
+        white-space: pre-wrap;
+      }
+
+      .btn-delete {
+        background: #fee2e2;
+        color: #ef4444;
+        border: none;
+        padding: 8px 14px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+      }
+
+      .btn-delete:hover {
+        background: #fecaca;
+        color: #dc2626;
+      }
+
+      .empty-state {
+        text-align: center;
+        color: #94a3b8;
+        font-size: 14px;
+        padding: 30px 0;
+        background: #f8fafc;
+        border-radius: 12px;
+        border: 1px dashed #cbd5e1;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="app-header">
+        <h2>CloudNote</h2>
+        <div class="user-controls">
+          <div id="user-greeting" style="display: none"></div>
+          <!-- THÊM: Nút đăng xuất -->
+          <button
+            id="logout-btn"
+            class="btn-logout"
+            style="display: none"
+            onclick="logout()"
+          >
+            Đăng xuất
+          </button>
+        </div>
+      </div>
+
+      <div class="input-wrapper">
+        <textarea
+          id="noteContent"
+          placeholder="Bạn đang nghĩ gì? Ghi chú ngay nào..."
+        ></textarea>
+      </div>
+
+      <button class="btn-save" onclick="createNote()">✨ LƯU GHI CHÚ</button>
+
+      <div class="header-list">📝 Ghi chú gần đây</div>
+      <div id="notesList"></div>
+    </div>
+
+    <script>
+      const API_URL = "https://mzn4qbkq5f.execute-api.us-east-1.amazonaws.com/";
+
+      // Xử lý hiển thị Popup nhập tên người dùng khi vừa mở web
+      document.addEventListener("DOMContentLoaded", () => {
+        let userName = localStorage.getItem("cloudNoteUser");
+        const greetingDiv = document.getElementById("user-greeting");
+        const logoutBtn = document.getElementById("logout-btn");
+
+        if (!userName) {
+          Swal.fire({
+            title: "☁️ Chào mừng đến CloudNote",
+            text: "Vui lòng nhập tên của bạn để bắt đầu trải nghiệm:",
+            input: "text",
+            allowOutsideClick: false,
+            confirmButtonText: "Bắt đầu ngay",
+            confirmButtonColor: "#0066ff",
+            preConfirm: (name) => {
+              if (!name) {
+                Swal.showValidationMessage("Bạn chưa nhập tên kìa!");
+              }
+              return name;
+            },
+          }).then((result) => {
+            if (result.isConfirmed) {
+              localStorage.setItem("cloudNoteUser", result.value);
+              greetingDiv.innerHTML = "👋 " + result.value;
+              greetingDiv.style.display = "inline-flex";
+              logoutBtn.style.display = "block";
+            }
+          });
+        } else {
+          greetingDiv.innerHTML = "👋 " + userName;
+          greetingDiv.style.display = "inline-flex";
+          logoutBtn.style.display = "block";
+        }
+      });
+
+      // THÊM: Hàm xử lý Đăng xuất
+      function logout() {
+        Swal.fire({
+          title: "Đăng xuất?",
+          text: "Bạn muốn đổi tài khoản/tên khác?",
+          icon: "question",
+          showCancelButton: true,
+          confirmButtonColor: "#ef4444",
+          cancelButtonColor: "#cbd5e1",
+          confirmButtonText: "Đăng xuất ngay",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            localStorage.removeItem("cloudNoteUser"); // Xóa tên khỏi bộ nhớ
+            location.reload(); // Tự động load lại trang web
+          }
+        });
+      }
+
+      async function fetchNotes() {
+        try {
+          const response = await fetch(API_URL);
+          const data = await response.json();
+          const notesList = document.getElementById("notesList");
+          notesList.innerHTML = "";
+
+          let notesArray = data.notes || [];
+
+          if (notesArray.length === 0) {
+            notesList.innerHTML = `<div class="empty-state">Chưa có ghi chú nào. Hãy là người đầu tiên tạo ghi chú!</div>`;
+            return;
+          }
+
+          notesArray.forEach((note) => {
+            const div = document.createElement("div");
+            div.className = "note-card";
+
+            div.innerHTML = `
+                <div class="note-text">${note.content || JSON.stringify(note)}</div>
+                <button class="btn-delete" onclick="deleteNote('${note.id}')">Xóa</button>
+            `;
+            notesList.appendChild(div);
+          });
+        } catch (err) {
+          console.error("Lỗi tải ghi chú:", err);
+        }
+      }
+
+      async function createNote() {
+        const contentInput = document.getElementById("noteContent");
+        const content = contentInput.value.trim();
+
+        if (!content) {
+          Swal.fire({
+            icon: "warning",
+            title: "Opps...",
+            text: "Vui lòng nhập nội dung ghi chú nhé!",
+            confirmButtonColor: "#0066ff",
+          });
+          return;
+        }
+
+        const btn = document.querySelector(".btn-save");
+        btn.innerText = "⏳ ĐANG LƯU...";
+        btn.style.opacity = "0.7";
+
+        try {
+          const response = await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ content: content }),
+          });
+
+          if (!response.ok) throw new Error("Lỗi khi lưu trên server");
+
+          contentInput.value = "";
+
+          const Toast = Swal.mixin({
+            toast: true,
+            position: "top-end",
+            showConfirmButton: false,
+            timer: 2000,
+            timerProgressBar: true,
+          });
+          Toast.fire({
+            icon: "success",
+            title: "Đã lưu ghi chú thành công!",
+          });
+
+          await fetchNotes();
+        } catch (err) {
+          console.error("Lỗi tạo ghi chú:", err);
+          Swal.fire({
+            icon: "error",
+            title: "Lỗi mạng!",
+            text: "Không thể lưu ghi chú, hãy kiểm tra lại kết nối.",
+            confirmButtonColor: "#ef4444",
+          });
+        } finally {
+          btn.innerText = "✨ LƯU GHI CHÚ";
+          btn.style.opacity = "1";
+        }
+      }
+
+      function deleteNote(noteId) {
+        Swal.fire({
+          title: "Bạn có chắc chắn?",
+          text: "Ghi chú này sẽ bị xóa vĩnh viễn không thể khôi phục!",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#ef4444",
+          cancelButtonColor: "#cbd5e1",
+          confirmButtonText: "Xóa ngay",
+          cancelButtonText: "Hủy",
+        }).then(async (result) => {
+          if (result.isConfirmed) {
+            try {
+              const response = await fetch(API_URL, {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id: noteId }),
+              });
+
+              if (!response.ok) throw new Error("Lỗi khi xóa");
+
+              Swal.fire({
+                title: "Đã xóa!",
+                text: "Ghi chú đã được xóa thành công.",
+                icon: "success",
+                confirmButtonColor: "#0066ff",
+              });
+
+              fetchNotes();
+            } catch (err) {
+              console.error("Lỗi xóa ghi chú:", err);
+              Swal.fire({
+                icon: "error",
+                title: "Thất bại!",
+                text: "Không thể xóa ghi chú này.",
+                confirmButtonColor: "#ef4444",
+              });
+            }
+          }
+        });
+      }
+
+      fetchNotes();
+    </script>
+  </body>
+</html>
